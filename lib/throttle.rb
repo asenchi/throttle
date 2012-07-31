@@ -3,22 +3,24 @@ require "throttle/version"
 module Throttle
   extend self
 
-  # Public: Setup our cache (Redis by default) and add default limits.
-  # Only one default limit can be created, either an 'interval' or 'timespan'.
+  # Public: Setup our cache (Redis by default).
   #
   # cache   = the key/value implementation that responds to #get/#set (default: Redis)
-  # options = Set one default limit (interval or timespan)
   #
   # Examples
   #
   #   Throttle.setup
   #   # =>
   #
-  #   Throttle.setup({:interval => 2.0})
+  #   Throttle.setup(Redis.new(:host => ...,))
   #   # =>
   #
   # Returns
   def setup(cache=nil, options={})
+    if mocking?
+      cache = limits
+    end
+
     perform_setup(cache, options)
   end
 
@@ -36,6 +38,7 @@ module Throttle
   # Returns true or false
   def limited?(sym, t=nil)
     @start = t ? convert(t) : Time.now.utc.to_i
+    true
   end
 
   # Public: Create a new limit
@@ -61,11 +64,7 @@ module Throttle
 
     value = "#{strategy}:#{limit.join(":")}"
 
-    if mocking?
-      limits[prefix] = value
-    else
-      cache_set(prefix, value)
-    end
+    cache_set(prefix, value)
   end
 
   # Public: Turns on mocking mode
@@ -113,11 +112,11 @@ module Throttle
     @limits = {}
   end
 
-  protected
-
   def cache
     @cache
   end
+
+  protected
 
   # Protected: Set the value at key in cache
   #
@@ -179,26 +178,7 @@ module Throttle
   end
 
   def perform_setup(cache, options)
-    if mocking?
-      @cache = limits
-    else
-      @cache = cache ? cache : Redis.new
-    end
+    @cache = cache ? cache : Redis.new
     @options = options
-    create_default_limit(@options)
-  end
-
-  def create_default_limit(options)
-    return if options.empty?
-
-    if options.keys.include?(:interval)
-      options.delete_if {|k| k != :interval }
-      create_limit(:default, options)
-    end
-
-    if options[:timespan] && options[:max]
-      options.delete_if {|k| k !~ /(timespan|max)/ }
-      create_limit(:default, options)
-    end
   end
 end

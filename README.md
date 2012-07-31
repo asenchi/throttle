@@ -24,18 +24,10 @@ Example of default setup (connects to Redis localhost):
 Throttle.setup
 ```
 
-Example of setting a default interval (:default is the implied limit
-name):
+Example of connecting to an external Redis
 
 ```ruby
-Throttle.setup(Redis.new, {:interval => 2.0})
-```
-
-Example of setting a default timespan (:default is the implied limit
-name):
-
-```ruby
-Throttle.setup(Redis.new, {:max => 1000, :timespan => 86400})
+Throttle.setup(Redis.new(...))
 ```
 
 Example of working with the default limits set above (only one default
