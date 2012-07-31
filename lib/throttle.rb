@@ -179,7 +179,11 @@ module Throttle
   end
 
   def perform_setup(cache, options)
-    @cache = cache ? cache : Redis.new
+    if mocking?
+      @cache = limits
+    else
+      @cache = cache ? cache : Redis.new
+    end
     @options = options
     create_default_limit(@options)
   end
