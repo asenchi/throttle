@@ -56,7 +56,7 @@ module Throttle
     prefix = sym.to_s
     if manifest.has_key?(:interval)
       strategy = "interval"
-      limit = manifest[:interval].to_f
+      limit = [manifest[:interval]]
     else
       strategy = "timespan"
       limit    = [manifest[:max], manifest[:timespan]]
