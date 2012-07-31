@@ -18,7 +18,51 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Example of default setup (connects to Redis localhost):
+
+```ruby
+Throttle.setup
+```
+
+Example of setting a default interval (:default is the implied limit
+name):
+
+```ruby
+Throttle.setup(Redis.new, {:interval => 2.0})
+```
+
+Example of setting a default timespan (:default is the implied limit
+name):
+
+```ruby
+Throttle.setup(Redis.new, {:max => 1000, :timespan => 86400})
+```
+
+Example of working with the default limits set above (only one default
+limit can be specified, either timespan or interval:
+
+```ruby
+Throttle.limited?(:default)
+```
+
+Example of a timespan strategy (required keys: max, timespan):
+
+```ruby
+Throttle.create_limit(:apihits, {:max => 1000, :timespan => 86400})
+```
+
+Example of interval strategy (required keys: interval):
+
+```ruby
+Throttle.create_limit(:apirate, {:interval => 3.0})
+```
+
+Example of checking whether we are limited:
+
+```ruby
+Throttle.limited?(:apihits)
+Throttle.limited?(:apirate)
+```
 
 ## Contributing
 
