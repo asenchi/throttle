@@ -68,11 +68,56 @@ module Throttle
     end
   end
 
-  def cache
-    @cache
+  # Public: Turns on mocking mode
+  #
+  # Examples
+  #
+  #   Throttle.mock!
+  #   # => true
+  def mock!
+    @mock = true
+  end
+
+  # Public: Checks if mocking mode is enabled
+  #
+  # Examples
+  #
+  #   Throttle.mocking?
+  #   # => false
+  #   Throttle.mock!
+  #   Throttle.mocking?
+  #   # => true
+  #
+  # Returns the state of mocking
+  def self.mocking?
+    !!@mock
+  end
+
+  # Public: Store mocked limits
+  #
+  # Returns an Array of limits
+  def limits
+    @limits ||= {}
+  end
+
+  # Public: Reset mocked data
+  #
+  # Examples
+  #
+  #   Throttle.limits
+  #   # => {..}
+  #   Throttle.reset!
+  #   Throttle.limits
+  #   # => {}
+  def reset!
+    @limits = {}
   end
 
   protected
+
+  def cache
+    @cache
+  end
 
   # Protected: Set the value at key in cache
   #
@@ -125,51 +170,6 @@ module Throttle
     else
       false
     end
-  end
-
-  # Public: Turns on mocking mode
-  #
-  # Examples
-  #
-  #   Throttle.mock!
-  #   # => true
-  def mock!
-    @mock => true
-  end
-
-  # Public: Checks if mocking mode is enabled
-  #
-  # Examples
-  #
-  #   Throttle.mocking?
-  #   # => false
-  #   Throttle.mock!
-  #   Throttle.mocking?
-  #   # => true
-  #
-  # Returns the state of mocking
-  def self.mocking?
-    !!@mock
-  end
-
-  # Public: Store mocked limits
-  #
-  # Returns an Array of limits
-  def limits
-    @limits ||= {}
-  end
-
-  # Public: Reset mocked data
-  #
-  # Examples
-  #
-  #   Throttle.limits
-  #   # => {..}
-  #   Throttle.reset!
-  #   Throttle.limits
-  #   # => {}
-  def reset!
-    @limits = {}
   end
 
   private
