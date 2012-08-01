@@ -28,6 +28,7 @@ module Throttle
   # limited
   #
   # sym = limit identifier
+  # id  = unique identifier (default: nil)
   # t   = specified time to test against (default: nil)
   #
   # Examples
@@ -36,9 +37,43 @@ module Throttle
   #   # => true
   #
   # Returns true or false
-  def limited?(sym, t=nil)
-    @start = t ? convert(t) : Time.now.utc.to_i
-    true
+  def limited?(sym, id=nil, t=nil)
+    start = t ? convert(t) : Time.now.utc.to_i
+
+    if id
+      key = [sym.to_s, id].join(":")
+    else
+      key = sym.to_s
+    end
+
+    c = config[sym.to_s]
+    case c[:strategy]
+    when "interval"
+      last = cache_get(key) rescue nil
+      allowed = !last || (start - last.to_i) >= c[:interval]
+      begin
+        cache_set(key, start)
+        allowed
+      rescue => e
+        # If we get an error, don't block unnecessarily
+        allowed = true
+      end
+    when "timespan"
+      case c[:timespan]
+      when :hourly
+        seconds = 3600
+        display = "%Y-%m-%dT%H"
+      when :daily
+        seconds = 86400
+        display = "%Y-%m-%d"
+
+      end
+      window = Time.at(start - seconds).strftime(display)
+      timekey = [key, window].join(':')
+      if count = (cache_has?(timekey).to_i + 1 rescue 1)
+        allowed = count <= seconds
+      end
+    end
   end
 
   # Public: Create a new limit
@@ -46,25 +81,37 @@ module Throttle
   # sym      = Identify this limit
   # manifest = Hash that provides an interval or timespan
   #            configuration
+  # blk      = Pass a block (thus creating a temporary limit)
   #
   # Examples
   #
-  #   Throttle.create_limit(:apihits, {:max => 1000, :timespan => 86400})
+  #   Throttle.set_limit(:apihits, {:max => 1000, :timespan => 86400})
+  #   # =>
+  #   Throttle.set_limit(:apirate, {:interval => 3.0})
+  #   # =>
   #
   # Returns 
-  def create_limit(sym, manifest)
+  def set_limit(sym, manifest, &blk)
     prefix = sym.to_s
-    if manifest.has_key?(:interval)
-      strategy = "interval"
-      limit = [manifest[:interval]]
-    else
-      strategy = "timespan"
-      limit    = [manifest[:max], manifest[:timespan]]
+    case
+    when manifest.has_key?(:interval)
+      manifest.delete_if {|k| k != :interval }
+      manifest[:strategy] = "interval"
+    when manifest.has_key?(:timespan)
+      manifest.delete_if {|k| k !~ /(timespan|max)/ }
+      manifest[:strategy] = "timespan"
     end
 
-    value = "#{strategy}:#{limit.join(":")}"
+    config[prefix] = manifest
+    # Warm up the cache
+    cache_set(prefix, 0)
+  end
 
-    cache_set(prefix, value)
+  # Public: Configuration
+  #
+  # Returns a hash with the limit configuration
+  def config
+    @config ||= {}
   end
 
   # Public: Turns on mocking mode
@@ -94,7 +141,7 @@ module Throttle
 
   # Public: Store mocked limits
   #
-  # Returns an Array of limits
+  # Returns an Hash of limits
   def limits
     @limits ||= {}
   end
@@ -180,5 +227,6 @@ module Throttle
   def perform_setup(cache, options)
     @cache = cache ? cache : Redis.new
     @options = options
+    @config = {}
   end
 end

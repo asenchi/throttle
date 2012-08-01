@@ -40,13 +40,21 @@ Throttle.limited?(:default)
 Example of a timespan strategy (required keys: max, timespan):
 
 ```ruby
-Throttle.create_limit(:apihits, {:max => 1000, :timespan => 86400})
+Throttle.set_limit(:apihits, {:max => 1000, :timespan => 86400})
 ```
 
 Example of interval strategy (required keys: interval):
 
 ```ruby
-Throttle.create_limit(:apirate, {:interval => 3.0})
+Throttle.set_limit(:apirate, {:interval => 3.0})
+```
+
+Example of a temporary interval strategy using blocks:
+
+```ruby
+Throttle.set_limit(:apirate, {:interval => 3.0}) do
+  # do work
+end
 ```
 
 Example of checking whether we are limited:
