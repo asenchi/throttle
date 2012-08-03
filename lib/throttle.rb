@@ -1,3 +1,5 @@
+require 'redis'
+
 require "throttle/version"
 
 module Throttle
@@ -50,13 +52,13 @@ module Throttle
     case c[:strategy]
     when "interval"
       last = cache_get(key) rescue nil
-      allowed = !last || (start - last.to_i) >= c[:interval]
+      allowed = !last || (start - last.to_i) <= c[:interval]
       begin
         cache_set(key, start)
         allowed
       rescue => e
         # If we get an error, don't block unnecessarily
-        allowed = true
+        allowed = false
       end
     when "timespan"
       case c[:timespan]
@@ -66,7 +68,6 @@ module Throttle
       when :daily
         seconds = 86400
         display = "%Y-%m-%d"
-
       end
       window = Time.at(start - seconds).strftime(display)
       timekey = [key, window].join(':')

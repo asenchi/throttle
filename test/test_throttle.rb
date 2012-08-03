@@ -18,13 +18,19 @@ class TestThrottle < Test::Unit::TestCase
     assert_not_nil Throttle.cache
   end
 
-  def test_create_limit
-    Throttle.create_limit(:test, {:interval => 9000})
-    assert Throttle.limits.has_key?("test")
+  def test_set_limit
+    Throttle.set_limit(:test, {:interval => 9000})
+    assert Throttle.config.has_key?("test")
   end
 
   def test_limit_value
-    Throttle.create_limit(:test, {:interval => 9000})
-    assert_equal Throttle.limits["test"], "interval:9000"
+    Throttle.set_limit(:test, {:interval => 9000})
+    assert_equal Throttle.config["test"], {:interval => 9000, :strategy => "interval"}
+  end
+
+  def test_interval_strategy
+    Throttle.set_limit(:two, {:interval => 2.0})
+    assert !Throttle.limited?(:two)
+    assert Throttle.limited?(:two)
   end
 end
