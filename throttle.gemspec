@@ -4,8 +4,8 @@ require File.expand_path('../lib/throttle/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Curt Micol"]
   gem.email         = ["asenchi@asenchi.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = %q{Throttle something...}
+  gem.summary       = %q{Throttle can be used to rate limit "something" based around interval or timespan (currently hourly or daily).}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)

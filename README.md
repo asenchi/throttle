@@ -1,6 +1,10 @@
 # Throttle
 
-TODO: Write a gem description
+Throttle allows you to rate limit based on a number of strategies.
+Currently two strategies are implemented, 'interval' and 'timespan'.
+Using an 'interval' you could limit the number of requests you receive
+and using a 'timespan' you can set a max around hourly and daily
+settings (planned for the future to be configurable).
 
 ## Installation
 
