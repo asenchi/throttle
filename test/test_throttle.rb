@@ -30,7 +30,10 @@ class TestThrottle < Test::Unit::TestCase
 
   def test_interval_strategy
     Throttle.set_limit(:two, {:interval => 2.0})
-    assert !Throttle.limited?(:two)
-    assert Throttle.limited?(:two)
+    assert !Throttle.limited?(:two), "Should not be limited"
+    assert Throttle.limited?(:two), "Should be limited"
+    sleep 2.1
+    assert !Throttle.limited?(:two), "Should not be limited a second time"
+    assert Throttle.limited?(:two), "Should be limited a second time"
   end
 end

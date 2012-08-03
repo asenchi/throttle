@@ -40,7 +40,7 @@ module Throttle
   #
   # Returns true or false
   def limited?(sym, id=nil, t=nil)
-    start = t ? convert(t) : Time.now.utc.to_i
+    start = t ? convert(t) : Time.now.utc.to_f
 
     if id
       key = [sym.to_s, id].join(":")
@@ -52,7 +52,7 @@ module Throttle
     case c[:strategy]
     when "interval"
       last = cache_get(key) rescue nil
-      allowed = !last || (start - last.to_i) <= c[:interval]
+      allowed = !last || (start - last.to_f) <= c[:interval].to_f
       begin
         cache_set(key, start)
         allowed
@@ -71,7 +71,7 @@ module Throttle
       end
       window = Time.at(start - seconds).strftime(display)
       timekey = [key, window].join(':')
-      if count = (cache_has?(timekey).to_i + 1 rescue 1)
+      if count = (cache_has?(timekey).to_f + 1 rescue 1)
         allowed = count <= seconds
       end
     end
