@@ -52,13 +52,13 @@ module Throttle
     case c[:strategy]
     when "interval"
       last = cache_get(key) rescue nil
-      allowed = !last || (start - last.to_f) <= c[:interval].to_f
+      limited = !last || (start - last.to_f) <= c[:interval].to_f
       begin
         cache_set(key, start)
-        allowed
+        limited
       rescue => e
         # If we get an error, don't block unnecessarily
-        allowed = false
+        limited = false
       end
     when "timespan"
       case c[:timespan]
@@ -69,10 +69,17 @@ module Throttle
         seconds = 86400
         display = "%Y-%m-%d"
       end
+      max = c[:max] ? c[:max] : seconds
       window = Time.at(start - seconds).strftime(display)
       timekey = [key, window].join(':')
-      if count = (cache_has?(timekey).to_f + 1 rescue 1)
-        allowed = count <= seconds
+      if count = (cache_has?(timekey).to_i + 1 rescue 1)
+        limited = count > max
+      end
+      begin
+        cache_set(timekey, count)
+        limited
+      rescue => e
+        limited = false
       end
     end
   end
@@ -211,7 +218,7 @@ module Throttle
   def cache_has?(key)
     case
     when cache.respond_to?(:has_key?)
-      cache.has_key?(key)
+      cache.has_key?(key) and cache[key]
     when cache.respond_to?(:get)
       cache.get(key) rescue false
     else
@@ -228,6 +235,6 @@ module Throttle
   def perform_setup(cache, options)
     @cache = cache ? cache : Redis.new
     @options = options
-    @config = {}
+    config
   end
 end

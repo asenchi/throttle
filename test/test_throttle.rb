@@ -36,4 +36,11 @@ class TestThrottle < Test::Unit::TestCase
     assert !Throttle.limited?(:two), "Should not be limited a second time"
     assert Throttle.limited?(:two), "Should be limited a second time"
   end
+
+  def test_timespan_strategy
+    Throttle.set_limit(:h, {:max => 2, :timespan => "hourly"})
+    assert !Throttle.limited?(:h)
+    assert !Throttle.limited?(:h)
+    assert Throttle.limited?(:h), "We should be limited"
+  end
 end
