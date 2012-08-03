@@ -40,7 +40,7 @@ Throttle.limited?(:default)
 Example of a timespan strategy (required keys: max, timespan):
 
 ```ruby
-Throttle.set_limit(:apihits, {:max => 1000, :timespan => 86400})
+Throttle.set_limit(:apihits, {:max => 1000, :timespan => "daily"})
 ```
 
 Example of interval strategy (required keys: interval):
@@ -49,7 +49,7 @@ Example of interval strategy (required keys: interval):
 Throttle.set_limit(:apirate, {:interval => 3.0})
 ```
 
-Example of a temporary interval strategy using blocks:
+Example of a temporary interval strategy using blocks (not currently implemented):
 
 ```ruby
 Throttle.set_limit(:apirate, {:interval => 3.0}) do

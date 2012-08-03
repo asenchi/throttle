@@ -62,10 +62,10 @@ module Throttle
       end
     when "timespan"
       case c[:timespan]
-      when :hourly
+      when "hourly"
         seconds = 3600
         display = "%Y-%m-%dT%H"
-      when :daily
+      when "daily"
         seconds = 86400
         display = "%Y-%m-%d"
       end
