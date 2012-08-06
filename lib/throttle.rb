@@ -1,13 +1,11 @@
-require 'redis'
-
 require "throttle/version"
 
 module Throttle
   extend self
 
-  # Public: Setup our cache (Redis by default).
+  # Public: Setup our cache (Hash by default).
   #
-  # cache   = the key/value implementation that responds to #get/#set (default: Redis)
+  # cache   = the key/value implementation that responds to #get/#set (default: Hash)
   #
   # Examples
   #
@@ -233,7 +231,7 @@ module Throttle
   end
 
   def perform_setup(cache, options)
-    @cache = cache ? cache : Redis.new
+    @cache = cache ? cache : Hash.new
     @options = options
     config
   end

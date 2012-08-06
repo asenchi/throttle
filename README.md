@@ -22,7 +22,7 @@ Or install it yourself as:
 
 ## Usage
 
-Example of default setup (connects to Redis localhost):
+Example of default setup:
 
 ```ruby
 Throttle.setup
